@@ -1,0 +1,12 @@
+{
+  "name": "markov-clima",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Explorador educativo de distribuciones climáticas hipotéticas con cadenas de Markov.",
+  "author": "Maria Trujillo",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test"
+  }
+}

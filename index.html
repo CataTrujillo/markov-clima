@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Explora distribuciones hipotéticas de estados climáticos con una cadena de Markov.">
+    <title>Markov Clima</title>
+    <link rel="stylesheet" href="styles.css">
+    <script type="module" src="src/main.mjs"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="./" aria-label="Markov Clima, inicio">
+        <span class="brand-mark" aria-hidden="true">MC</span>
+        <span>Markov Clima</span>
+      </a>
+      <span class="author">Autora: Maria Trujillo</span>
+    </header>
+
+    <main class="page-shell">
+      <section class="intro" aria-labelledby="page-title">
+        <p class="eyebrow">Explorador de probabilidades</p>
+        <h1 id="page-title">¿Cómo podría cambiar el clima?</h1>
+        <p class="intro-copy">Ajusta las probabilidades de transición y observa cómo evoluciona la distribución de estados a lo largo del tiempo.</p>
+      </section>
+
+      <aside class="notice" aria-label="Aviso importante">
+        <span class="notice-icon" aria-hidden="true">i</span>
+        <p><strong>Modelo hipotético.</strong> Estas probabilidades son solo para explorar una cadena de Markov y no constituyen un pronóstico meteorológico real.</p>
+      </aside>
+
+      <div class="workspace">
+        <section class="card controls-card" aria-labelledby="controls-title">
+          <div class="section-heading">
+            <span class="step-number">01</span>
+            <div>
+              <h2 id="controls-title">Configura el modelo</h2>
+              <p>Indica la probabilidad de pasar de cada estado a otro.</p>
+            </div>
+          </div>
+
+          <form id="simulation-form" novalidate>
+            <fieldset class="matrix-fieldset">
+              <legend>Matriz de transición</legend>
+              <p class="table-hint">Filas: estado de origen · Columnas: estado de destino</p>
+              <div class="table-scroll">
+                <table class="matrix-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Origen / destino</th>
+                      <th scope="col">Soleado</th>
+                      <th scope="col">Nublado</th>
+                      <th scope="col">Lluvioso</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr data-state-row="0">
+                      <th scope="row">Soleado</th>
+                      <td><input id="p-0-0" name="p-0-0" data-row="0" data-column="0" aria-label="Probabilidad de soleado a soleado" inputmode="decimal" value="0.7"></td>
+                      <td><input id="p-0-1" name="p-0-1" data-row="0" data-column="1" aria-label="Probabilidad de soleado a nublado" inputmode="decimal" value="0.2"></td>
+                      <td><input id="p-0-2" name="p-0-2" data-row="0" data-column="2" aria-label="Probabilidad de soleado a lluvioso" inputmode="decimal" value="0.1"></td>
+                    </tr>
+                    <tr data-state-row="1">
+                      <th scope="row">Nublado</th>
+                      <td><input id="p-1-0" name="p-1-0" data-row="1" data-column="0" aria-label="Probabilidad de nublado a soleado" inputmode="decimal" value="0.3"></td>
+                      <td><input id="p-1-1" name="p-1-1" data-row="1" data-column="1" aria-label="Probabilidad de nublado a nublado" inputmode="decimal" value="0.4"></td>
+                      <td><input id="p-1-2" name="p-1-2" data-row="1" data-column="2" aria-label="Probabilidad de nublado a lluvioso" inputmode="decimal" value="0.3"></td>
+                    </tr>
+                    <tr data-state-row="2">
+                      <th scope="row">Lluvioso</th>
+                      <td><input id="p-2-0" name="p-2-0" data-row="2" data-column="0" aria-label="Probabilidad de lluvioso a soleado" inputmode="decimal" value="0.2"></td>
+                      <td><input id="p-2-1" name="p-2-1" data-row="2" data-column="1" aria-label="Probabilidad de lluvioso a nublado" inputmode="decimal" value="0.3"></td>
+                      <td><input id="p-2-2" name="p-2-2" data-row="2" data-column="2" aria-label="Probabilidad de lluvioso a lluvioso" inputmode="decimal" value="0.5"></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="field-note">Cada valor debe estar entre 0 y 1, y cada fila debe sumar 1.</p>
+            </fieldset>
+
+            <div class="form-footer">
+              <label class="select-label" for="initial-state">
+                <span>Estado inicial</span>
+                <select id="initial-state" name="initial-state">
+                  <option value="0" selected>Soleado</option>
+                  <option value="1">Nublado</option>
+                  <option value="2">Lluvioso</option>
+                </select>
+              </label>
+              <button class="calculate-button" type="submit">
+                Calcular distribución
+                <span aria-hidden="true">→</span>
+              </button>
+            </div>
+            <div id="validation-errors" class="validation-errors" role="alert" aria-live="assertive" hidden></div>
+          </form>
+        </section>
+
+        <section id="results" class="card results-card" aria-labelledby="results-title" hidden>
+          <div class="section-heading">
+            <span class="step-number step-number--result">02</span>
+            <div>
+              <h2 id="results-title">Distribuciones calculadas</h2>
+              <p id="results-summary">Probabilidades por estado para cada horizonte.</p>
+            </div>
+          </div>
+
+          <div id="charts" class="charts-grid" aria-label="Gráficas de barras"></div>
+
+          <div class="table-scroll results-table-scroll">
+            <table class="results-table">
+              <caption>Probabilidad de cada estado por número de pasos</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Pasos</th>
+                  <th scope="col">Soleado</th>
+                  <th scope="col">Nublado</th>
+                  <th scope="col">Lluvioso</th>
+                </tr>
+              </thead>
+              <tbody id="results-table-body"></tbody>
+            </table>
+          </div>
+          <p class="results-disclaimer">Recuerda: son probabilidades hipotéticas, no un pronóstico real.</p>
+        </section>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <span>Markov Clima</span>
+      <span>Una herramienta educativa de probabilidad</span>
+    </footer>
+  </body>
+</html>
